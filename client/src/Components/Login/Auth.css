@@ -1,0 +1,91 @@
+.Auth-container {
+  background-color: whitesmoke;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-image: linear-gradient(
+    rgb(175, 183, 254),
+    rgb(196, 241, 238),
+    rgb(136, 243, 136)
+  );
+
+  .Auth-content {
+    background-color: whitesmoke;
+    width: 500px;
+    border-radius: 25px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 450px;
+      margin-left: 25px;
+      gap: 30px;
+      background-color: white;
+      border-radius: 20px;
+      .pwd-btn {
+        width: 450px;
+        display: flex;
+        align-items: center;
+
+        button {
+          height: 55px;
+          margin-left: -5px;
+          z-index: 1;
+          width: 110px;
+          background-color: rgb(242, 231, 217);
+          cursor: pointer;
+          border-color: rgb(212, 184, 184);
+        }
+      }
+      .btn{
+        background-color: #4caf50;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;      }
+    }
+    .register-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 450px;
+      gap: 15px;
+      margin-left: 25px;
+      background-color: white;
+      border-radius: 25px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      .btn {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;      }
+
+      .pwd-btn {
+        width: 450px;
+        display: flex;
+        align-items: center;
+
+        button {
+          height: 55px;
+          margin-left: -5px;
+          z-index: 1;
+          width: 110px;
+          background-color: rgb(242, 231, 217);
+          cursor: pointer;
+          border-color: rgb(212, 184, 184);
+        }
+      }
+    }
+  }
+}
