@@ -10,7 +10,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatItem from "./ChatItem";
 import "./Home.css";
@@ -18,6 +18,8 @@ import { ChatState } from "../Context/ChatProvider";
 import { getSender } from "../../utils/LogicalCode";
 import { toast } from "react-toastify";
 import GroupChatModal from "../Modal/GroupChatModal";
+import { GlobalVariableContext } from "../../App";
+import { useSocketContext } from "../Context/SocketContext";
 
 const SideBar = ({ fetchAgain }) => {
   let navigate = useNavigate();
@@ -28,6 +30,9 @@ const SideBar = ({ fetchAgain }) => {
   const [openModal, setOpenModal] = useState(false);
   let token = localStorage.getItem("token");
   let [profile, setProfile] = useState({});
+  let global = useContext(GlobalVariableContext);
+  // const { onlineUsers } = useSocketContext();
+  // const isOnline = onlineUsers.includes(chat._id);
 
   let getProfile = async () => {
     try {
@@ -91,7 +96,13 @@ const SideBar = ({ fetchAgain }) => {
     setAnchorEl(null);
   };
 
-  
+  const handleLogout = () => {
+    global.setToken(null);
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+  const handleOnlineUsers = () => {};
 
   return (
     <>
@@ -114,7 +125,8 @@ const SideBar = ({ fetchAgain }) => {
                 {/* Add your profile options here */}
                 My Profile
               </MenuItem>
-              <MenuItem>Log Out</MenuItem>
+              <MenuItem onClick={handleOnlineUsers}>Online Users</MenuItem>
+              <MenuItem onClick={handleLogout}>Log Out</MenuItem>
             </Menu>
           </div>
           <div>
@@ -143,6 +155,7 @@ const SideBar = ({ fetchAgain }) => {
             .reverse()
             .map((chat) => {
               if (!chat.latestMessage) {
+                const isOnline = chat.user && chat.user.isOnline;
                 return (
                   <div
                     key={chat._id}
@@ -165,7 +178,10 @@ const SideBar = ({ fetchAgain }) => {
                         chat.users &&
                         Array.isArray(chat.users) &&
                         chat.users.length > 0 ? (
-                          getSender(profile, chat.users)
+                          <>
+                            {getSender(profile, chat.users)}
+                            {isOnline && <div className="online-indicator" />}
+                          </>
                         ) : null
                       ) : (
                         <div

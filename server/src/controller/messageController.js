@@ -1,10 +1,12 @@
 import { Chat, Message, User } from "../schema/model.js";
+import { getReceiverSocketId } from "../socket/socket.js";
 
 export const sendMessage = async (req, res) => {
   const { content, chatId } = req.body;
-  console.log(req.user);
 
   try {
+    const { id: receiverId } = req.params;
+
     if (!content || !chatId) {
       console.log("Invalid data passed into request");
       return res.sendStatus(400);
@@ -13,11 +15,12 @@ export const sendMessage = async (req, res) => {
     var newMessage = {
       sender: req.user._id,
       content: content,
+
       chat: chatId,
     };
-    var message = await Message.create(newMessage);
 
-    console.log(message);
+    let message = await Message.create(newMessage);
+
     message = await message.populate("sender", "name pic");
     message = await message.populate("chat");
     message = await message.populate("receiver");
@@ -27,6 +30,12 @@ export const sendMessage = async (req, res) => {
     });
 
     await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
+
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      IO.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
     res.json(message);
   } catch (error) {
     res.status(400);

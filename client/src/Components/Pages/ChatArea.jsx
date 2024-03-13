@@ -4,31 +4,34 @@ import SendIcon from "@mui/icons-material/Send";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { Divider, Drawer, IconButton } from "@mui/material";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
-import io from "socket.io-client";
 import { getSender, getSenderDetails } from "../../utils/LogicalCode";
 import { ChatState } from "../Context/ChatProvider";
 import UpdateGroupChat from "../Modal/UpdateGroupChat";
 import OtherMessage from "./OtherMessage";
 import SelfMessage from "./SelfMessage";
+import { useSocketContext } from "../Context/SocketContext";
 
-const ENDPOINT = "http://localhost:8080";
-var socket, selectedChatCompare;
-
-const ChatArea = () => {
+const ChatArea = ({ fetchAgain, setFetchAgain }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [socketConnected, setSocketConnected] = useState(false);
   const { selectedChat, user } = ChatState();
   let token = localStorage.getItem("token");
   let [profile, setProfile] = useState({});
+  const { socket } = useSocketContext();
 
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
   };
+
+  const fetchChatsCallback = () => {
+    setFetchAgain(!fetchAgain);
+  };
+
+  const messageContainerRef = useRef(null);
 
   let getProfile = async () => {
     try {
@@ -46,12 +49,6 @@ const ChatArea = () => {
   useEffect(() => {
     getProfile();
   }, []);
-
-  useEffect(() => {
-    socket = io(ENDPOINT);
-    /* socket.emit("setup", user);
-    socket.on("connection", ()=>{setSocketConnected(true)}); */
-  });
 
   const sendMessage = async () => {
     if (newMessage) {
@@ -72,6 +69,7 @@ const ChatArea = () => {
         setMessages([...messages, result.data]);
 
         setNewMessage("");
+        fetchChatsCallback();
       } catch (error) {
         toast({
           title: "Error Occurred!",
@@ -84,6 +82,7 @@ const ChatArea = () => {
       }
     }
   };
+
   const getMessages = async () => {
     if (!selectedChat) {
       return;
@@ -113,8 +112,24 @@ const ChatArea = () => {
   };
 
   useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+  useEffect(() => {
+    socket?.on("newMessage", (newMessage) => {
+      setMessages([...messages, newMessage]);
+      
+    });
     getMessages();
-  }, [selectedChat]);
+
+    return () => socket?.off("newMessage");
+  }, [selectedChat, fetchAgain, newMessage, socket, messages]);
+
+  const scrollToBottom = () => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop =
+        messageContainerRef.current.scrollHeight;
+    }
+  };
 
   const sender = selectedChat?.users
     ? getSender(profile, selectedChat?.users)
@@ -187,9 +202,8 @@ const ChatArea = () => {
           </Drawer>
         </div>
       </div>
-      <div className="message-container">
+      <div ref={messageContainerRef} className="message-container">
         {/* Render your messages here */}
-        {/* Example: */}
         {messages.map((message) =>
           message.sender._id === profile._id ? (
             <SelfMessage key={message._id} message={message} />

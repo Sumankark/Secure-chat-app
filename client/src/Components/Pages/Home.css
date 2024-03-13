@@ -64,6 +64,14 @@
     .sb-user::-webkit-scrollbar {
       display: none;
     }
+    .online-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #4caf50; /* Green color for online status */
+      margin-left: 5px;
+      display: inline-block;
+    }
   }
   .chat-container {
     background-color: yellowgreen;

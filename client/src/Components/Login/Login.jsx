@@ -29,7 +29,7 @@ const Login = () => {
       let token = result.data.token;
       localStorage.setItem("token", token);
       global.setToken(token);
-
+ 
       navigate("/home");
     } catch (error) {
 
