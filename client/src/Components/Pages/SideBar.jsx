@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import GroupChatModal from "../Modal/GroupChatModal";
 import { GlobalVariableContext } from "../../App";
 import { useSocketContext } from "../Context/SocketContext";
+import { decryptMessage } from "../encryption/AES";
 
 const SideBar = ({ fetchAgain }) => {
   let navigate = useNavigate();
@@ -31,8 +32,8 @@ const SideBar = ({ fetchAgain }) => {
   let token = localStorage.getItem("token");
   let [profile, setProfile] = useState({});
   let global = useContext(GlobalVariableContext);
-  // const { onlineUsers } = useSocketContext();
-  // const isOnline = onlineUsers.includes(chat._id);
+  const { onlineUsers } = useSocketContext();
+  const isOnline = onlineUsers.includes(chat._id);
 
   let getProfile = async () => {
     try {
@@ -78,7 +79,7 @@ const SideBar = ({ fetchAgain }) => {
     setLoggedUser(localStorage.getItem("token"));
     fetchChats();
     // eslint-disable-next-line
-  }, [fetchAgain]);
+  }, [chats]);
 
   const handleModalOpen = () => {
     setOpenModal(true);
@@ -233,6 +234,10 @@ const SideBar = ({ fetchAgain }) => {
             )
             .map((chat) => {
               if (chat.latestMessage) {
+                const decryptedContent = decryptMessage(
+                  chat.latestMessage.content
+                );
+
                 return (
                   <div
                     key={chat._id}
@@ -285,9 +290,9 @@ const SideBar = ({ fetchAgain }) => {
                           justifyContent: "left",
                         }}
                       >
-                        {chat.latestMessage.content.length > 50
-                          ? chat.latestMessage.content.substring(0, 51) + "..."
-                          : chat.latestMessage.content}
+                        {decryptedContent.length > 50
+                          ? decryptedContent.substring(0, 51) + "..."
+                          : decryptedContent}
                       </div>
                     )}
                   </div>

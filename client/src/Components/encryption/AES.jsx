@@ -13,5 +13,5 @@ export const decryptMessage = (ciphertext) => {
   const bytes = CryptoJS.AES.decrypt(ciphertext, "secureChat");
   const decryptedMessage = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-  return decryptMessage;
+  return decryptedMessage;
 };

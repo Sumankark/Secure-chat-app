@@ -12,6 +12,7 @@ import UpdateGroupChat from "../Modal/UpdateGroupChat";
 import OtherMessage from "./OtherMessage";
 import SelfMessage from "./SelfMessage";
 import { useSocketContext } from "../Context/SocketContext";
+import { decryptMessage, encryptMessage } from "../encryption/AES";
 
 const ChatArea = ({ fetchAgain, setFetchAgain }) => {
   const [open, setOpen] = useState(false);
@@ -53,6 +54,8 @@ const ChatArea = ({ fetchAgain, setFetchAgain }) => {
   const sendMessage = async () => {
     if (newMessage) {
       try {
+        const encryptedMessage = encryptMessage(newMessage);
+
         let result = await axios({
           url: `http://localhost:8080/messages`,
           method: "POST",
@@ -61,7 +64,7 @@ const ChatArea = ({ fetchAgain, setFetchAgain }) => {
             Authorization: `Bearer ${token}`,
           },
           data: {
-            content: newMessage,
+            content: encryptedMessage,
             chatId: selectedChat._id,
           },
         });
@@ -96,7 +99,12 @@ const ChatArea = ({ fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setMessages(result.data);
+
+      const decryptedMessages = result.data.map((message) => ({
+        ...message,
+        content: decryptMessage(message.content),
+      }));
+      setMessages(decryptedMessages);
 
       setLoading(false);
     } catch (error) {
@@ -117,7 +125,6 @@ const ChatArea = ({ fetchAgain, setFetchAgain }) => {
   useEffect(() => {
     socket?.on("newMessage", (newMessage) => {
       setMessages([...messages, newMessage]);
-      
     });
     getMessages();
 
